@@ -40,14 +40,4 @@ public class FilesController {
         String message = "***** Health Check **** ";
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
     }
-
-    @GetMapping("/getProperties/{borough}")
-    public List<NycRentControlledPropertiesResponse> getProperties(@PathVariable String borough) {
-        try {
-            return storageService.getProperties(borough);
-
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
-    }
 }

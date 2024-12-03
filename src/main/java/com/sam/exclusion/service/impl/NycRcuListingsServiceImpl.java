@@ -6,7 +6,6 @@ import com.sam.exclusion.repository.NycRcuListingsRepository;
 import com.sam.exclusion.service.NycRcuListingsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sam.exclusion.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -36,7 +35,6 @@ public class NycRcuListingsServiceImpl implements NycRcuListingsService {
         String boroughName = boroughAndIdMap.keySet().iterator().next();
         String boroughId = boroughAndIdMap.get(boroughName);
         nycRcuListingsRepository.deleteRecordsByBorough(boroughName);
-        nycRcuListingsAddressRepository.deleteRecordsByBorough(boroughName);
 
         CompletableFuture.runAsync(() -> tables.parallelStream().forEach(table -> {
             try {

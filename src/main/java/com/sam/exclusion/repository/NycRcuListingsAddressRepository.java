@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface NycRcuListingsAddressRepository extends JpaRepository<NyRentStabilizedPropertyAddress, Long> {
 
-    @Modifying
+    /*@Modifying
     @Transactional
     @Query(value="DELETE FROM NyRentStabilizedPropertyAddress WHERE borough = ?1")
     void deleteRecordsByBorough(String boroughName);
@@ -36,6 +36,6 @@ public interface NycRcuListingsAddressRepository extends JpaRepository<NyRentSta
             "FROM NyRentStabilizedPropertyAddress a " +
             "LEFT JOIN NyRentStabilizedProperty p ON p.ucbblNumber = a.ucbblNumber " +
             "LEFT JOIN NycStblzdPropertyData u ON a.ucbblNumber = u.ucbblNumber")
-    long countAllAddresses();
+    long countAllAddresses();*/
 
 }

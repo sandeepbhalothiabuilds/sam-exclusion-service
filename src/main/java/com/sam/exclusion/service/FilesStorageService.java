@@ -8,6 +8,4 @@ import java.util.List;
 
 public interface FilesStorageService {
     public void save(MultipartFile file);
-
-    List<NycRentControlledPropertiesResponse> getProperties(String borough);
 }

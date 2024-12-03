@@ -2,7 +2,6 @@ package com.sam.exclusion.service.impl;
 
 import com.sam.exclusion.entity.NyRentStabilizedProperty;
 import com.sam.exclusion.entity.NyRentStabilizedPropertyAddress;
-import com.sam.exclusion.entity.NycStblzdPropertyData;
 import com.sam.exclusion.model.PropertyDetails;
 import com.sam.exclusion.repository.NycRcuListingsAddressRepository;
 import jakarta.persistence.criteria.*;
@@ -31,15 +30,19 @@ public class NYRentStbLzdPropertyService {
 
     public List<PropertyDetails> getPropertyDetails(int offset) {
         Pageable pagable = PageRequest.of(offset, offset+50);
-        return addrRepository.getAllProperties(pagable);
+        //return addrRepository.getAllProperties(pagable);
+        return null;
     }
 
     public List<PropertyDetails> getPropertyDetails() {
-        return addrRepository.getAllProperties();
+        //return addrRepository.getAllProperties();
+        return null;
     }
 
     public Long getPropertyDetailsCount() {
-        return addrRepository.countAllAddresses();
+
+        //return addrRepository.countAllAddresses();
+        return null;
     }
 
     public Long countByCriteria(String zipcode, String borough , String buildingNumber, String street, String stateSuffix){
@@ -82,16 +85,13 @@ public class NYRentStbLzdPropertyService {
         CriteriaQuery<PropertyDetails> query = criteriaBuilder.createQuery(PropertyDetails.class);
         Root<NyRentStabilizedPropertyAddress> addressRoot = query.from(NyRentStabilizedPropertyAddress.class);
         Root<NyRentStabilizedProperty> dataRoot = query.from(NyRentStabilizedProperty.class);
-        Root<NycStblzdPropertyData> unitsRoot = query.from(NycStblzdPropertyData.class);
 
         List<Predicate> predicates = new ArrayList<>();
         Predicate joinCondition1 = criteriaBuilder.equal(addressRoot.get("ucbblNumber"), dataRoot.get("ucbblNumber"));
         predicates.add(joinCondition1);
         //query.where(joinCondition1);
         // Join with custom condition: ucbblNumber = ucbbl
-        Predicate joinCondition = criteriaBuilder.equal(addressRoot.get("ucbblNumber"), unitsRoot.get("ucbblNumber"));
         //query.where(joinCondition);
-        predicates.add(joinCondition);
 
         if (zipcode != null) {
             Predicate zipcodeCondition = criteriaBuilder.like(addressRoot.get("zip"), "%"+zipcode+"%");
@@ -122,7 +122,6 @@ public class NYRentStbLzdPropertyService {
         query.select(criteriaBuilder.construct(
                 PropertyDetails.class,
                 dataRoot,
-                unitsRoot,
                 addressRoot
 
         )).orderBy(criteriaBuilder.asc(addressRoot.get("addressId")));
