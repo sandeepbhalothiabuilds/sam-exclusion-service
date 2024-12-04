@@ -1,16 +1,14 @@
 package com.sam.exclusion.entity;
 
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -114,4 +112,14 @@ public class SAMExclusionsData {
 
     @Column(name = "creation_date")
     private String creationDate;
+
+    @Column(name = "full_address")
+    private String fullAddress;
+
+    @Column(name = "full_name")
+    private String fullName;
+
+    @OneToMany(mappedBy = "samExclusionsData", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SAMExclusionsAlias> samExclusionsAlias = new ArrayList<>();
+
 }
