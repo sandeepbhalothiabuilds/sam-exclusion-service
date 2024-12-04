@@ -5,12 +5,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import com.sam.exclusion.entity.SAMExclusionsAlias;
 import com.sam.exclusion.entity.SAMExclusionsData;
 import com.sam.exclusion.repository.SAMExclusionsDataRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,7 +73,8 @@ public class CSVParser {
                     entity.setCreationDate(samExclusionRecord[30]);
                     entity.setFullName(getFullName(samExclusionRecord));
                     entity.setFullAddress(getFullAddress(samExclusionRecord));
-                    entity.setSamExclusionsAlias(getAliases(samExclusionRecord[26], entity));
+                    entity.setAlias(getAliasNames(entity.getFullName(), samExclusionRecord[26]));
+                   // entity.setSamExclusionsAlias(getAliases(samExclusionRecord[26], entity));
 
                     samExclusionsDataList.add(entity);
 
@@ -84,14 +88,27 @@ public class CSVParser {
         }
     }
 
+    private String getAliasNames(String fullName, String aliases) {
+        aliases = StringUtils.replaceEach(aliases, Constants.searchList, Constants.replacementList);
+        Set<String> aliasSet = new HashSet<>();
+        aliasSet.add(fullName.trim());
+        if (null != aliases && !aliases.isBlank()) {
+            String[] arr = aliases.replace("(also", "").replace(")", "").replaceAll("'", "").replaceAll("\"", "").replaceAll("\"", "").split(",");
+            for (String s : arr) {
+                aliasSet.add(s.trim());
+            }
+        }
+        return String.join(",", aliasSet);
+    }
+
     private List<SAMExclusionsAlias> getAliases(String aliases, SAMExclusionsData entity) {
         List<SAMExclusionsAlias> samExclusionsAliasList = new ArrayList<>();
         SAMExclusionsAlias samExclusionsAlias;
-        if(null!= aliases && !aliases.isBlank()){
+        if (null != aliases && !aliases.isBlank()) {
             String[] arr = aliases.replace("(also", "").replace(")", "").replaceAll("'", "").replaceAll("\"", "").split(",");
             for (String s : arr) {
                 samExclusionsAlias = new SAMExclusionsAlias();
-                samExclusionsAlias.setAliasName(s);
+                samExclusionsAlias.setAliasName(s.trim());
                 samExclusionsAlias.setSamExclusionsData(entity);
                 samExclusionsAliasList.add(samExclusionsAlias);
             }
@@ -101,15 +118,15 @@ public class CSVParser {
     }
 
     private String getFullAddress(String[] samExclusionRecord) {
-        String fAddress = samExclusionRecord[7] + " " + samExclusionRecord[8] + " " + samExclusionRecord[9] + " " + samExclusionRecord[10] + "\n" + samExclusionRecord[11] + " " + samExclusionRecord[12]+ " " + samExclusionRecord[13] + " " + samExclusionRecord[14];
+        String fAddress = samExclusionRecord[7] + " " + samExclusionRecord[8] + " " + samExclusionRecord[9] + " " + samExclusionRecord[10] + "\n" + samExclusionRecord[11] + " " + samExclusionRecord[12] + " " + samExclusionRecord[13] + " " + samExclusionRecord[14];
         fAddress = fAddress.replaceAll("\\s+", " ");
         return fAddress.trim();
     }
 
     private String getFullName(String[] samExclusionRecord) {
         String fName = samExclusionRecord[1] + " " + samExclusionRecord[2] + " " + samExclusionRecord[3] + " " + samExclusionRecord[4] + " " + samExclusionRecord[5] + " " + samExclusionRecord[6];
-        fName = fName.replaceAll("\\s+", " ");
-        return fName.trim();
+        fName = fName.replaceAll("\\s+", " ").replaceAll("\"", "");
+        return StringUtils.replaceEach(fName, Constants.searchList, Constants.replacementList).trim();
     }
 
     public void saveSamExclusions(List<SAMExclusionsData> propertiesList) {
