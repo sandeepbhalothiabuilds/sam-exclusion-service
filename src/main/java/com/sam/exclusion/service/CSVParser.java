@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.sam.exclusion.entity.SAMExclusionsAlias;
 import com.sam.exclusion.entity.SAMExclusionsData;
+import com.sam.exclusion.repository.SAMExclusionsAliasRepository;
 import com.sam.exclusion.repository.SAMExclusionsDataRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class CSVParser {
 
     @Autowired
     SAMExclusionsDataRepository samExclusionsDataRepository;
+
+    @Autowired
+    SAMExclusionsAliasRepository samExclusionsAliasRepository;
 
     String line = "";
 
@@ -41,40 +45,40 @@ public class CSVParser {
                     SAMExclusionsData entity = new SAMExclusionsData();
                     String[] samExclusionRecord = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);// use comma as separator
 
-                    entity.setClassification(samExclusionRecord[0]);
-                    entity.setName(samExclusionRecord[1]);
-                    entity.setPrefixName(samExclusionRecord[2]);
-                    entity.setFirstName(samExclusionRecord[3]);
-                    entity.setMiddleName(samExclusionRecord[4]);
-                    entity.setLastName(samExclusionRecord[5]);
-                    entity.setSuffixName(samExclusionRecord[6]);
-                    entity.setAddress1(samExclusionRecord[7]);
-                    entity.setAddress2(samExclusionRecord[8]);
-                    entity.setAddress3(samExclusionRecord[9]);
-                    entity.setAddress4(samExclusionRecord[10]);
-                    entity.setCity(samExclusionRecord[11]);
-                    entity.setStateOrProvince(samExclusionRecord[12]);
-                    entity.setCountry(samExclusionRecord[13]);
-                    entity.setZipCode(samExclusionRecord[14]);
-                    entity.setOpenDataFlag(samExclusionRecord[15]);
-                    entity.setUniqueEntityId(samExclusionRecord[17]);
-                    entity.setExclusionProgram(samExclusionRecord[18]);
-                    entity.setExcludingAgency(samExclusionRecord[19]);
-                    entity.setCtCode(samExclusionRecord[20]);
-                    entity.setExclusionType(samExclusionRecord[21]);
-                    entity.setAdditionalComments(samExclusionRecord[22]);
-                    entity.setActiveDate(samExclusionRecord[23]);
-                    entity.setTerminationDate(samExclusionRecord[24]);
-                    entity.setRecordStatus(samExclusionRecord[25]);
-                    entity.setCrossReference(samExclusionRecord[26]);
-                    entity.setSamNumber(samExclusionRecord[27]);
-                    entity.setCage(samExclusionRecord[28]);
-                    entity.setNpi(samExclusionRecord[29]);
-                    entity.setCreationDate(samExclusionRecord[30]);
+                    entity.setClassification(samExclusionRecord[0].replaceAll("\"", ""));
+                    entity.setName(samExclusionRecord[1].replaceAll("\"", ""));
+                    entity.setPrefixName(samExclusionRecord[2].replaceAll("\"", ""));
+                    entity.setFirstName(samExclusionRecord[3].replaceAll("\"", ""));
+                    entity.setMiddleName(samExclusionRecord[4].replaceAll("\"", ""));
+                    entity.setLastName(samExclusionRecord[5].replaceAll("\"", ""));
+                    entity.setSuffixName(samExclusionRecord[6].replaceAll("\"", ""));
+                    entity.setAddress1(samExclusionRecord[7].replaceAll("\"", ""));
+                    entity.setAddress2(samExclusionRecord[8].replaceAll("\"", ""));
+                    entity.setAddress3(samExclusionRecord[9].replaceAll("\"", ""));
+                    entity.setAddress4(samExclusionRecord[10].replaceAll("\"", ""));
+                    entity.setCity(samExclusionRecord[11].replaceAll("\"", ""));
+                    entity.setStateOrProvince(samExclusionRecord[12].replaceAll("\"", ""));
+                    entity.setCountry(samExclusionRecord[13].replaceAll("\"", ""));
+                    entity.setZipCode(samExclusionRecord[14].replaceAll("\"", ""));
+                    entity.setOpenDataFlag(samExclusionRecord[15].replaceAll("\"", ""));
+                    entity.setUniqueEntityId(samExclusionRecord[17].replaceAll("\"", ""));
+                    entity.setExclusionProgram(samExclusionRecord[18].replaceAll("\"", ""));
+                    entity.setExcludingAgency(samExclusionRecord[19].replaceAll("\"", ""));
+                    entity.setCtCode(samExclusionRecord[20].replaceAll("\"", ""));
+                    entity.setExclusionType(samExclusionRecord[21].replaceAll("\"", ""));
+                    entity.setAdditionalComments(samExclusionRecord[22].replaceAll("\"", ""));
+                    entity.setActiveDate(samExclusionRecord[23].replaceAll("\"", ""));
+                    entity.setTerminationDate(samExclusionRecord[24].replaceAll("\"", ""));
+                    entity.setRecordStatus(samExclusionRecord[25].replaceAll("\"", ""));
+                    entity.setCrossReference(samExclusionRecord[26].replaceAll("\"", ""));
+                    entity.setSamNumber(samExclusionRecord[27].replaceAll("\"", ""));
+                    entity.setCage(samExclusionRecord[28].replaceAll("\"", ""));
+                    entity.setNpi(samExclusionRecord[29].replaceAll("\"", ""));
+                    entity.setCreationDate(samExclusionRecord[30].replaceAll("\"", ""));
                     entity.setFullName(getFullName(samExclusionRecord));
                     entity.setFullAddress(getFullAddress(samExclusionRecord));
                     entity.setAlias(getAliasNames(entity.getFullName(), samExclusionRecord[26]));
-                   // entity.setSamExclusionsAlias(getAliases(samExclusionRecord[26], entity));
+                    entity.setSamExclusionsAlias(getAliases(entity.getAlias(), entity));
 
                     samExclusionsDataList.add(entity);
 
@@ -98,14 +102,14 @@ public class CSVParser {
                 aliasSet.add(s.trim());
             }
         }
-        return String.join(",", aliasSet);
+        return StringUtils.removeStart(String.join(",", aliasSet), ",");
     }
 
     private List<SAMExclusionsAlias> getAliases(String aliases, SAMExclusionsData entity) {
         List<SAMExclusionsAlias> samExclusionsAliasList = new ArrayList<>();
         SAMExclusionsAlias samExclusionsAlias;
         if (null != aliases && !aliases.isBlank()) {
-            String[] arr = aliases.replace("(also", "").replace(")", "").replaceAll("'", "").replaceAll("\"", "").split(",");
+            String[] arr = aliases.split(",");
             for (String s : arr) {
                 samExclusionsAlias = new SAMExclusionsAlias();
                 samExclusionsAlias.setAliasName(s.trim());
@@ -120,7 +124,7 @@ public class CSVParser {
     private String getFullAddress(String[] samExclusionRecord) {
         String fAddress = samExclusionRecord[7] + " " + samExclusionRecord[8] + " " + samExclusionRecord[9] + " " + samExclusionRecord[10] + "\n" + samExclusionRecord[11] + " " + samExclusionRecord[12] + " " + samExclusionRecord[13] + " " + samExclusionRecord[14];
         fAddress = fAddress.replaceAll("\\s+", " ");
-        return fAddress.trim();
+        return fAddress.replaceAll("\"", "").trim();
     }
 
     private String getFullName(String[] samExclusionRecord) {
@@ -129,10 +133,11 @@ public class CSVParser {
         return StringUtils.replaceEach(fName, Constants.searchList, Constants.replacementList).trim();
     }
 
-    public void saveSamExclusions(List<SAMExclusionsData> propertiesList) {
+    public void saveSamExclusions(List<SAMExclusionsData> samExclusionsDataList) {
         try {
             samExclusionsDataRepository.deleteAllRecords();
-            List<List<SAMExclusionsData>> listOfPropertiesList = Lists.partition(propertiesList, 500);
+            samExclusionsAliasRepository.deleteAllRecords();
+            List<List<SAMExclusionsData>> listOfPropertiesList = Lists.partition(samExclusionsDataList, 500);
             listOfPropertiesList.parallelStream().forEach(list -> samExclusionsDataRepository.saveAll(list));
         } catch (Exception e) {
             System.out.println("Error while saving the data: " + e);
