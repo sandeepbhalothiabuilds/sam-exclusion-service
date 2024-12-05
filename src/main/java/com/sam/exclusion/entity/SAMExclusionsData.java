@@ -119,6 +119,9 @@ public class SAMExclusionsData {
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(name = "alias")
+    private String alias;
+
     @OneToMany(mappedBy = "samExclusionsData", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SAMExclusionsAlias> samExclusionsAlias = new ArrayList<>();
 
