@@ -1,13 +1,12 @@
 package com.sam.exclusion.service;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.nio.channels.*;
 import java.util.concurrent.CompletableFuture;
 
 import com.sam.exclusion.entity.SAMExclusionsAlias;
@@ -31,7 +30,10 @@ public class CSVParser {
 
     String line = "";
 
-    public void extractExcelData(File file) {
+    public void extractExcelData(File file) throws IOException {
+
+        //downloadFile();
+
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
             ArrayList<SAMExclusionsData> samExclusionsDataList = new ArrayList<>();
@@ -92,12 +94,48 @@ public class CSVParser {
         }
     }
 
+    private void downloadFile() throws IOException {
+
+        Date date = new Date();
+        // Format the date into Julian format (YYDDD)
+        SimpleDateFormat julianFormat = new SimpleDateFormat("yyDDD");
+        String julianDate = julianFormat.format(date);
+        System.out.println("Julian date: " + julianDate);
+        String url = "https://sam.gov/api/prod/fileextractservices/v1/api/download/Exclusions/Public%20V2/SAM_Exclusions_Public_Extract_V2_"+julianDate+".ZIP?privacy=Public";
+        String path = "temp.zip";
+        //downloadZipFile(url, path);
+        downloadZipFile2(url , path);
+        System.out.println("File Downloaded at path: "+path);
+    }
+
+    private void downloadZipFile2(String url, String path) {
+        try (BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
+             FileOutputStream fileOutputStream = new FileOutputStream(path)) {
+            byte dataBuffer[] = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+                fileOutputStream.write(dataBuffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            System.out.println("Error: "+e);
+        }
+    }
+
+    private void downloadZipFile(String url, String path) throws IOException {
+            URL zipurl = new URL(url);
+            try (ReadableByteChannel readableByteChannel = Channels.newChannel(zipurl.openStream());
+                 FileOutputStream fileOutputStream = new FileOutputStream(path)) {
+
+                fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            }
+        }
+
     private String getAliasNames(String fullName, String aliases) {
         aliases = StringUtils.replaceEach(aliases, Constants.searchList, Constants.replacementList);
         Set<String> aliasSet = new HashSet<>();
         aliasSet.add(fullName.trim());
         if (null != aliases && !aliases.isBlank()) {
-            String[] arr = aliases.replace("(also", "").replace(")", "").replaceAll("'", "").replaceAll("\"", "").replaceAll("\"", "").split(",");
+            String[] arr = aliases.replace("(also", "").replace(")", "").replaceAll("'", "").replaceAll("\"", "").split(",");
             for (String s : arr) {
                 aliasSet.add(s.trim());
             }
@@ -123,21 +161,21 @@ public class CSVParser {
 
     private String getFullAddress(String[] samExclusionRecord) {
         String fAddress = samExclusionRecord[7] + " " + samExclusionRecord[8] + " " + samExclusionRecord[9] + " " + samExclusionRecord[10] + "\n" + samExclusionRecord[11] + " " + samExclusionRecord[12] + " " + samExclusionRecord[13] + " " + samExclusionRecord[14];
-        fAddress = fAddress.replaceAll("\\s+", " ");
+        fAddress = fAddress.replaceAll(" +", " ");
         return fAddress.replaceAll("\"", "").trim();
     }
 
     private String getFullName(String[] samExclusionRecord) {
         String fName = samExclusionRecord[1] + " " + samExclusionRecord[2] + " " + samExclusionRecord[3] + " " + samExclusionRecord[4] + " " + samExclusionRecord[5] + " " + samExclusionRecord[6];
-        fName = fName.replaceAll("\\s+", " ").replaceAll("\"", "");
-        return StringUtils.replaceEach(fName, Constants.searchList, Constants.replacementList).trim();
+        fName = fName.replaceAll(" +", " ").replaceAll("\"", "").replaceAll(",", "");
+        return fName.trim();
     }
 
-    public void saveSamExclusions(List<SAMExclusionsData> samExclusionsDataList) {
+    public void saveSamExclusions(List<SAMExclusionsData> propertiesList) {
         try {
             samExclusionsDataRepository.deleteAllRecords();
             samExclusionsAliasRepository.deleteAllRecords();
-            List<List<SAMExclusionsData>> listOfPropertiesList = Lists.partition(samExclusionsDataList, 500);
+            List<List<SAMExclusionsData>> listOfPropertiesList = Lists.partition(propertiesList, 500);
             listOfPropertiesList.parallelStream().forEach(list -> samExclusionsDataRepository.saveAll(list));
         } catch (Exception e) {
             System.out.println("Error while saving the data: " + e);
