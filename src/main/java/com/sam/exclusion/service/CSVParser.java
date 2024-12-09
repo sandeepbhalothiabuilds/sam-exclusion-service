@@ -1,14 +1,6 @@
 package com.sam.exclusion.service;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.nio.channels.*;
-import java.util.concurrent.CompletableFuture;
-
+import com.google.common.collect.Lists;
 import com.sam.exclusion.entity.SAMExclusionsAlias;
 import com.sam.exclusion.entity.SAMExclusionsData;
 import com.sam.exclusion.repository.SAMExclusionsAliasRepository;
@@ -17,13 +9,24 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Lists;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class CSVParser {
 
     @Autowired
     SAMExclusionsDataRepository samExclusionsDataRepository;
+
+  //  @Autowired
+   // Scheduler scheduler;
 
     @Autowired
     SAMExclusionsAliasRepository samExclusionsAliasRepository;
@@ -32,7 +35,7 @@ public class CSVParser {
 
     public void extractExcelData(File file) throws IOException {
 
-        //downloadFile();
+     //   scheduler.downloadFile();
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
@@ -94,41 +97,7 @@ public class CSVParser {
         }
     }
 
-    private void downloadFile() throws IOException {
 
-        Date date = new Date();
-        // Format the date into Julian format (YYDDD)
-        SimpleDateFormat julianFormat = new SimpleDateFormat("yyDDD");
-        String julianDate = julianFormat.format(date);
-        System.out.println("Julian date: " + julianDate);
-        String url = "https://sam.gov/api/prod/fileextractservices/v1/api/download/Exclusions/Public%20V2/SAM_Exclusions_Public_Extract_V2_"+julianDate+".ZIP?privacy=Public";
-        String path = "temp.zip";
-        //downloadZipFile(url, path);
-        downloadZipFile2(url , path);
-        System.out.println("File Downloaded at path: "+path);
-    }
-
-    private void downloadZipFile2(String url, String path) {
-        try (BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
-             FileOutputStream fileOutputStream = new FileOutputStream(path)) {
-            byte dataBuffer[] = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
-                fileOutputStream.write(dataBuffer, 0, bytesRead);
-            }
-        } catch (IOException e) {
-            System.out.println("Error: "+e);
-        }
-    }
-
-    private void downloadZipFile(String url, String path) throws IOException {
-            URL zipurl = new URL(url);
-            try (ReadableByteChannel readableByteChannel = Channels.newChannel(zipurl.openStream());
-                 FileOutputStream fileOutputStream = new FileOutputStream(path)) {
-
-                fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            }
-        }
 
     private String getAliasNames(String fullName, String aliases) {
         aliases = StringUtils.replaceEach(aliases, Constants.searchList, Constants.replacementList);
