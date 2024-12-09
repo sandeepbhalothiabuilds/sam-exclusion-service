@@ -2,12 +2,15 @@ package com.sam.exclusion.service.impl;
 
 import com.sam.exclusion.entity.SAMExclusionsAlias;
 import com.sam.exclusion.entity.SAMExclusionsData;
+import com.sam.exclusion.model.SAMExclusionsDataResponse;
 import com.sam.exclusion.model.SAMExclusionsSearchRequest;
 import com.sam.exclusion.model.SAMExclusionsSearchResponse;
 import com.sam.exclusion.repository.SAMExclusionsAliasRepository;
 import com.sam.exclusion.repository.SAMExclusionsDataRepository;
 
 import jakarta.persistence.criteria.*;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +40,13 @@ public class SAMExclusionsSearchService {
         List<Long> primaryIDs = aliasRepository.findDistinctIDByAliasNameIgnoreCaseContaining(samExclusionsSearchRequest.getName());
         searchResponse.setPrimaryIDListSize(primaryIDs.size());
         List<SAMExclusionsData> primaryList = dataRepository.findExclusionDataByIDList(primaryIDs);
-        searchResponse.setPrimaryData(primaryList);
+        ModelMapper modelMapper = new ModelMapper();
+
+        List<SAMExclusionsDataResponse> destinationList = modelMapper.map(primaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {}.getType());
+
+       // SAMExclusionsDataResponse destination = modelMapper.map(primaryList, SAMExclusionsDataResponse.class);
+
+        searchResponse.setPrimaryData(destinationList);
 
         return searchResponse;
     }

@@ -1,6 +1,7 @@
 package com.sam.exclusion.repository;
 
 import com.sam.exclusion.entity.SAMExclusionsData;
+import com.sam.exclusion.model.SAMExclusionsDataResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

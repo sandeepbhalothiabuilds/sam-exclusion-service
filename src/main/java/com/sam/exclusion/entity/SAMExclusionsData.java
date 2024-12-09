@@ -122,7 +122,7 @@ public class SAMExclusionsData {
     @Column(name = "alias")
     private String alias;
 
-    @OneToMany(mappedBy = "samExclusionsData", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "samExclusionsData", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SAMExclusionsAlias> samExclusionsAlias = new ArrayList<>();
 
 }
