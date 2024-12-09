@@ -1,24 +1,18 @@
 package com.sam.exclusion.service.impl;
 
-import com.sam.exclusion.entity.SAMExclusionsAlias;
 import com.sam.exclusion.entity.SAMExclusionsData;
 import com.sam.exclusion.model.SAMExclusionsDataResponse;
 import com.sam.exclusion.model.SAMExclusionsSearchRequest;
 import com.sam.exclusion.model.SAMExclusionsSearchResponse;
 import com.sam.exclusion.repository.SAMExclusionsAliasRepository;
 import com.sam.exclusion.repository.SAMExclusionsDataRepository;
-
-import jakarta.persistence.criteria.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
