@@ -15,7 +15,7 @@ public interface SAMExclusionsAliasRepository extends JpaRepository<SAMExclusion
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM SAMExclusionsAlias WHERE samExclusionAliasId > 0") 
+    @Query(value = "delete FROM sam.sam_exclusions_alias WHERE sam_exclusion_data_id not in (select sam_exclusion_data_id from sam.sam_exclusions_data)", nativeQuery = true)
     void deleteAllRecords();
 
     /*

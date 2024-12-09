@@ -18,7 +18,7 @@ public interface SAMExclusionsDataRepository extends JpaRepository<SAMExclusions
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM SAMExclusionsData WHERE samExclusionDataId > 0")
+    @Query(value = "DELETE FROM SAMExclusionsData WHERE terminationDate = '' or to_date(REPLACE(terminationDate, 'Indefinite', to_char(current_date, 'mm/dd/yyyy')) , 'mm/dd/yyyy') >= current_date")
     void deleteAllRecords();
 
     //Currently only accepting one ID

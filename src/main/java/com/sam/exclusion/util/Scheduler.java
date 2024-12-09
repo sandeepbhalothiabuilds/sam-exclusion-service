@@ -23,7 +23,7 @@ public class Scheduler {
     @Autowired
     CSVParser csvParser;
 
-    @Scheduled(cron = "0 16 17 * * ?") // Run at 3:15 PM every day
+    @Scheduled(cron = "0 31 18 * * ?") // Run at 3:15 PM every day
     public void myTask() throws IOException {
         // Your task logic here
         System.out.println("Task executed at 3:15 PM!");
