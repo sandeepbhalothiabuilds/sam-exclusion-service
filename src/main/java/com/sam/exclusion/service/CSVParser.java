@@ -32,7 +32,7 @@ public class CSVParser {
 
     public void extractExcelData(File file) throws IOException {
 
-        downloadFile();
+        //downloadFile();
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
