@@ -1,7 +1,6 @@
 package com.sam.exclusion.controller;
 
 import com.sam.exclusion.message.ResponseMessage;
-import com.sam.exclusion.model.NycRentControlledPropertiesResponse;
 import com.sam.exclusion.service.FilesStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,9 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @CrossOrigin
