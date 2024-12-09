@@ -44,16 +44,9 @@ public class SAMExclusionsSearchService {
 
         List<SAMExclusionsDataResponse> destinationList = modelMapper.map(primaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {}.getType());
 
-       // SAMExclusionsDataResponse destination = modelMapper.map(primaryList, SAMExclusionsDataResponse.class);
-
         searchResponse.setPrimaryData(destinationList);
 
         return searchResponse;
-    }
-
-    public Long getPropertyDetailsCount() {
-
-        return null;
     }
 
 }
