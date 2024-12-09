@@ -1,48 +1,22 @@
 package com.sam.exclusion.controller;
 
-import com.sam.exclusion.model.PropertyDetails;
-import com.sam.exclusion.service.impl.NYRentStbLzdPropertyService;
+
+import com.sam.exclusion.model.SAMExclusionsSearchRequest;
+import com.sam.exclusion.model.SAMExclusionsSearchResponse;
+import com.sam.exclusion.service.impl.SAMExclusionsSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/properties")
 @CrossOrigin
 public class SearchController {
     @Autowired
-    private NYRentStbLzdPropertyService nyRentStbLzdPropertyService;
+    private SAMExclusionsSearchService samExclusionsSearchService;
 
-    @GetMapping("/details/{offset}")
-    public List<PropertyDetails> getPropertyDetails(@PathVariable int offset) {
-        return nyRentStbLzdPropertyService.getPropertyDetails(offset);
+    @PostMapping("/search")
+    public SAMExclusionsSearchResponse searchSAMExclusions(@RequestBody SAMExclusionsSearchRequest samExclusionsSearchRequest) {
+        
+        return samExclusionsSearchService.searchSAMExclusionsData(samExclusionsSearchRequest);
     }
 
-    @GetMapping("/details/")
-    public List<PropertyDetails> getPropertyDetails() {
-        return nyRentStbLzdPropertyService.getPropertyDetails();
-    }
-    @GetMapping("/detailsCount")
-    public long getPropertyDetailsCount() {
-        return nyRentStbLzdPropertyService.getPropertyDetailsCount();
-    }
-
-
-    @GetMapping("/criteria")
-    public List<PropertyDetails> getProperties(@RequestParam(required = false) String zipcode, @RequestParam(required = false) String borough
-            ,@RequestParam(required = false) String buildingNumber,
-                                               @RequestParam(required = false) String street,
-                                               @RequestParam(required = false) String stateSuffix,
-                                               @RequestParam(required = true) int offset) {
-        return nyRentStbLzdPropertyService.findAllByCriteria(zipcode, borough, buildingNumber, street, stateSuffix, offset);
-    }
-
-    @GetMapping("/criteriaCount")
-    public Long getPropertiesCount(@RequestParam(required = false) String zipcode, @RequestParam(required = false) String borough
-            , @RequestParam(required = false) String buildingNumber,
-                                   @RequestParam(required = false) String street,
-                                   @RequestParam(required = false) String stateSuffix) {
-        return nyRentStbLzdPropertyService.countByCriteria(zipcode, borough, buildingNumber, street, stateSuffix);
-    }
 }
