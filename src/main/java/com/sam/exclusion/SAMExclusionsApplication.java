@@ -4,7 +4,9 @@ import com.sam.exclusion.service.FilesStorageService;
 import jakarta.annotation.Resource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling
 @SpringBootApplication
 public class SAMExclusionsApplication {
     @Resource
