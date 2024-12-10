@@ -33,7 +33,7 @@ public class FilesController {
 
     @GetMapping("/health")
     ResponseEntity<ResponseMessage> health() {
-        String message = "***** Health Check **** ";
+        String message = "***** Health Check- Today **** ";
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
     }
 }
