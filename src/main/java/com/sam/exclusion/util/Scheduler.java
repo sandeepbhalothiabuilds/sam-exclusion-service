@@ -25,10 +25,9 @@ public class Scheduler {
     @Autowired
     CSVParser csvParser;
 
-    @Scheduled(cron = "${file.download.schedule}") // Run at 3:15 PM every day
-    public void myTask() throws IOException {
-        // Your task logic here
-        System.out.println("Task executed at 06:31 PM!");
+    @Scheduled(cron = "${file.download.schedule}") // Run at 9:15 AM every day
+    public void startDownloading() throws IOException {
+        System.out.println("Download task started at 09:15 AM!");
         downloadFile();
     }
 

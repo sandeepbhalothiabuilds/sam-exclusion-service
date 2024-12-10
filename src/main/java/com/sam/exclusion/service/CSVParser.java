@@ -4,7 +4,10 @@ import com.google.common.collect.Lists;
 import com.sam.exclusion.entity.SAMExclusionsAlias;
 import com.sam.exclusion.entity.SAMExclusionsData;
 import com.sam.exclusion.repository.SAMExclusionsAliasRepository;
+import com.sam.exclusion.repository.SAMExclusionsAliasRepositoryCopy;
 import com.sam.exclusion.repository.SAMExclusionsDataRepository;
+import com.sam.exclusion.repository.SAMExclusionsDataRepositoryCopy;
+import com.sam.exclusion.util.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,8 +28,14 @@ public class CSVParser {
     @Autowired
     SAMExclusionsDataRepository samExclusionsDataRepository;
 
-  //  @Autowired
-   // Scheduler scheduler;
+    @Autowired
+    SAMExclusionsAliasRepositoryCopy samExclusionsAliasRepositoryCopy;
+
+    @Autowired
+    SAMExclusionsDataRepositoryCopy samExclusionsDataRepositoryCopy;
+
+    //  @Autowired
+    // Scheduler scheduler;
 
     @Autowired
     SAMExclusionsAliasRepository samExclusionsAliasRepository;
@@ -145,8 +154,14 @@ public class CSVParser {
         try {
             samExclusionsDataRepository.deleteAllRecords();
             samExclusionsAliasRepository.deleteAllRecords();
+
+            /*samExclusionsDataRepositoryCopy.deleteAllRecords();
+            samExclusionsAliasRepositoryCopy.deleteAllRecords();*/
+
             List<List<SAMExclusionsData>> listOfPropertiesList = Lists.partition(propertiesList, 500);
+            //listOfPropertiesList.parallelStream().forEach(list -> samExclusionsDataRepository.saveAll(list));
             listOfPropertiesList.parallelStream().forEach(list -> samExclusionsDataRepository.saveAll(list));
+
         } catch (Exception e) {
             System.out.println("Error while saving the data: " + e);
         }
