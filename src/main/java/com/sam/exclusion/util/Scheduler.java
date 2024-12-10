@@ -2,6 +2,7 @@ package com.sam.exclusion.util;
 
 import com.sam.exclusion.service.CSVParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,10 +21,11 @@ import java.util.zip.ZipFile;
 @Component
 public class Scheduler {
 
+
     @Autowired
     CSVParser csvParser;
 
-    @Scheduled(cron = "0 31 18 * * ?") // Run at 3:15 PM every day
+    @Scheduled(cron = "${file.download.schedule}") // Run at 3:15 PM every day
     public void myTask() throws IOException {
         // Your task logic here
         System.out.println("Task executed at 06:31 PM!");

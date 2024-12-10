@@ -91,6 +91,7 @@ public class CSVParser {
                     System.out.println("Error Occurred when building data to save in data in sam_exclusions_data table: " + e);
                 }
             }
+
             CompletableFuture.runAsync(() -> saveSamExclusions(samExclusionsDataList));
         } catch (IOException e) {
             System.out.println("Error while calling Async for SAM Exclusions data: " + e);
@@ -136,7 +137,7 @@ public class CSVParser {
 
     private String getFullName(String[] samExclusionRecord) {
         String fName = samExclusionRecord[1] + " " + samExclusionRecord[2] + " " + samExclusionRecord[3] + " " + samExclusionRecord[4] + " " + samExclusionRecord[5] + " " + samExclusionRecord[6];
-        fName = fName.replaceAll(" +", " ").replaceAll("\"", "").replaceAll(",", "");
+        fName = fName.replaceAll("\"", "").replaceAll(",", "").replaceAll(" +", " ");
         return fName.trim();
     }
 
