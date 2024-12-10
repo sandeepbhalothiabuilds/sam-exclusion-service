@@ -13,7 +13,8 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SAMExclusionsSearchService {
@@ -27,30 +28,96 @@ public class SAMExclusionsSearchService {
     EntityManager entityManager;
 
 
-    public SAMExclusionsSearchResponse searchSAMExclusionsData(SAMExclusionsSearchRequest samExclusionsSearchRequest){
-
+    public SAMExclusionsSearchResponse searchSAMExclusionsData(SAMExclusionsSearchRequest samExclusionsSearchRequest) {
         SAMExclusionsSearchResponse searchResponse = new SAMExclusionsSearchResponse();
-        
-        //Getting Data for the primary data
-        List<Long> primaryIDs = aliasRepository.findDistinctIDByAliasNameIgnoreCaseContaining(samExclusionsSearchRequest.getName()); 
-        List<String> samNumberList = dataRepository.findSamNumberByIDList(primaryIDs);
-        List<String> uniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(primaryIDs);
-        List<SAMExclusionsData> primaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(samNumberList,uniqueEntityIDList);
-       
-        //Getting Data for the secondary data
-        List<Long> secondaryIDs = aliasRepository.findSecondaryDataByName(samExclusionsSearchRequest.getName());
-        List<String> secondarySAMNumberList = dataRepository.findSamNumberByIDList(secondaryIDs);
-        List<String> secondaryUniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(secondaryIDs);
-        List<SAMExclusionsData> secondaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(secondarySAMNumberList,secondaryUniqueEntityIDList);
+        List<SAMExclusionsDataResponse> primaryDestinationAddressList = new ArrayList<>();
+        List<SAMExclusionsDataResponse> secondaryDestinationAddressList = new ArrayList<>();
 
-        ModelMapper modelMapper = new ModelMapper();
+        List<SAMExclusionsDataResponse> primaryDestinationNameList = new ArrayList<>();
+        List<SAMExclusionsDataResponse> secondaryDestinationNameList = new ArrayList<>();
 
-        List<SAMExclusionsDataResponse> destinationList = modelMapper.map(primaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {}.getType());
-        List<SAMExclusionsDataResponse> secondaryDestinationList = modelMapper.map(secondaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {}.getType());
+        if (null != samExclusionsSearchRequest.getName() && !samExclusionsSearchRequest.getName().isEmpty()) {
+            //Getting Data for the primary data
+            List<Long> primaryIDs = aliasRepository.findDistinctIDByAliasNameIgnoreCaseContaining(samExclusionsSearchRequest.getName());
+            List<String> samNumberList = dataRepository.findSamNumberByIDList(primaryIDs);
+            List<String> uniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(primaryIDs);
+            List<SAMExclusionsData> primaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(samNumberList, uniqueEntityIDList);
 
-        searchResponse.setPrimaryData(destinationList);
-        searchResponse.setSecondaryData(secondaryDestinationList);
+            //Getting Data for the secondary data
+            List<Long> secondaryIDs = aliasRepository.findSecondaryDataByName(samExclusionsSearchRequest.getName());
+            List<String> secondarySAMNumberList = dataRepository.findSamNumberByIDList(secondaryIDs);
+            List<String> secondaryUniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(secondaryIDs);
+            List<SAMExclusionsData> secondaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(secondarySAMNumberList, secondaryUniqueEntityIDList);
+
+            ModelMapper modelMapper = new ModelMapper();
+
+            primaryDestinationNameList = modelMapper.map(primaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {
+            }.getType());
+            secondaryDestinationNameList = modelMapper.map(secondaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {
+            }.getType());
+
+            filterForClassificationAndAgency(primaryDestinationNameList, secondaryDestinationNameList, searchResponse, samExclusionsSearchRequest);
+
+        }
+        if (null != samExclusionsSearchRequest.getAddress() && !samExclusionsSearchRequest.getAddress().isEmpty()) {
+            //Getting Data for the primary data
+            List<SAMExclusionsData> primarySAMExclusionsDataList = dataRepository.findRecordsByAddress(samExclusionsSearchRequest.getAddress().replaceAll(" ", "%"));
+            List<String> samNumberList = dataRepository.findSamNumberByIDList(primarySAMExclusionsDataList.stream().map(SAMExclusionsData::getSamExclusionDataId).toList());
+            List<String> uniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(primarySAMExclusionsDataList.stream().map(SAMExclusionsData::getSamExclusionDataId).toList());
+            List<SAMExclusionsData> primaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(samNumberList, uniqueEntityIDList);
+
+            List<SAMExclusionsData> mergedPrimaryList = mergeTwoListWithoutDuplicates(primarySAMExclusionsDataList, primaryList);
+
+
+            //Getting Data for the secondary data
+            List<String> aliasList = Arrays.asList(mergedPrimaryList.stream().map(SAMExclusionsData::getAlias)
+                    .collect(Collectors.joining(",")).split(","));
+
+            List<Long> secondaryIDs = aliasRepository.findSecondaryDataIdsByProvidingAliasList(aliasList, samExclusionsSearchRequest.getAddress().replaceAll(" ", "%"));
+            List<String> secondarySAMNumberList = dataRepository.findSamNumberByIDList(secondaryIDs);
+            List<String> secondaryUniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(secondaryIDs);
+            List<SAMExclusionsData> mergedSecondaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(secondarySAMNumberList, secondaryUniqueEntityIDList);
+
+            ModelMapper modelMapper = new ModelMapper();
+
+            primaryDestinationAddressList = modelMapper.map(mergedPrimaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {
+            }.getType());
+            secondaryDestinationAddressList = modelMapper.map(mergedSecondaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {
+            }.getType());
+
+            filterForClassificationAndAgency(primaryDestinationAddressList, secondaryDestinationAddressList, searchResponse, samExclusionsSearchRequest);
+        }
+
+        if (null != samExclusionsSearchRequest.getName() && !samExclusionsSearchRequest.getName().isEmpty() && null != samExclusionsSearchRequest.getAddress() && !samExclusionsSearchRequest.getAddress().isEmpty()) {
+            primaryDestinationAddressList.retainAll(primaryDestinationNameList);
+            searchResponse.setPrimaryData(primaryDestinationAddressList);
+
+            secondaryDestinationAddressList.retainAll(secondaryDestinationNameList);
+            searchResponse.setSecondaryData(secondaryDestinationAddressList);
+        }
         return searchResponse;
+    }
+
+    private void filterForClassificationAndAgency(List<SAMExclusionsDataResponse> primaryDestinationList, List<SAMExclusionsDataResponse> secondaryDestinationList, SAMExclusionsSearchResponse searchResponse, SAMExclusionsSearchRequest samExclusionsSearchRequest) {
+        if (null != samExclusionsSearchRequest.getClassification() && !samExclusionsSearchRequest.getClassification().isEmpty()) {
+            primaryDestinationList = primaryDestinationList.stream().filter(s -> s.getClassification().equalsIgnoreCase(samExclusionsSearchRequest.getClassification())).toList();
+            secondaryDestinationList = secondaryDestinationList.stream().filter(s -> s.getClassification().equalsIgnoreCase(samExclusionsSearchRequest.getClassification())).toList();
+        }
+
+        if (null != samExclusionsSearchRequest.getExcludingAgency() && !samExclusionsSearchRequest.getExcludingAgency().isEmpty()) {
+            primaryDestinationList = primaryDestinationList.stream().filter(s -> s.getExcludingAgency().equalsIgnoreCase(samExclusionsSearchRequest.getExcludingAgency())).toList();
+            secondaryDestinationList = secondaryDestinationList.stream().filter(s -> s.getExcludingAgency().equalsIgnoreCase(samExclusionsSearchRequest.getExcludingAgency())).toList();
+        }
+
+        searchResponse.setPrimaryData(primaryDestinationList);
+        searchResponse.setSecondaryData(secondaryDestinationList);
+    }
+
+    private List<SAMExclusionsData> mergeTwoListWithoutDuplicates(List<SAMExclusionsData> list1, List<SAMExclusionsData> list2) {
+        Set<SAMExclusionsData> set = new HashSet<>();
+        set.addAll(list1);
+        set.addAll(list2);
+        return new ArrayList<>(set);
     }
 
 }

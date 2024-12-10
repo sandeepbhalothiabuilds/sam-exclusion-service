@@ -138,7 +138,7 @@ public class CSVParser {
     private String getFullName(String[] samExclusionRecord) {
         String fName = samExclusionRecord[1] + " " + samExclusionRecord[2] + " " + samExclusionRecord[3] + " " + samExclusionRecord[4] + " " + samExclusionRecord[5] + " " + samExclusionRecord[6];
         fName = fName.replaceAll("\"", "").replaceAll(",", "").replaceAll(" +", " ");
-        return fName.trim();
+        return fName.trim().replaceAll(",$", "");
     }
 
     public void saveSamExclusions(List<SAMExclusionsData> propertiesList) {

@@ -21,13 +21,15 @@ public interface SAMExclusionsDataRepository extends JpaRepository<SAMExclusions
     @Query(value = "DELETE FROM SAMExclusionsData WHERE terminationDate = '' or to_date(REPLACE(terminationDate, 'Indefinite', to_char(current_date, 'mm/dd/yyyy')) , 'mm/dd/yyyy') >= current_date")
     void deleteAllRecords();
 
-    @Query(value = "select distinct sed.sam_number from  sam.sam_exclusions_data sed where sed.sam_exclusion_data_id in (:ids) and sed.sam_number is not null limit 999", nativeQuery = true)
+    @Query(value = "select distinct sed.sam_number from  sam.sam_exclusions_data sed where sed.sam_exclusion_data_id in (:ids) and sed.sam_number is not null limit 2000", nativeQuery = true)
     List<String> findSamNumberByIDList (@Param("ids") Collection<Long> ids);
 
-    @Query(value = "select distinct sed.unique_entity_id from  sam.sam_exclusions_data sed where sed.sam_exclusion_data_id in (:ids) and sed.unique_entity_id is not null limit 999", nativeQuery = true)
+    @Query(value = "select distinct sed.unique_entity_id from  sam.sam_exclusions_data sed where sed.sam_exclusion_data_id in (:ids) and sed.unique_entity_id is not null limit 2000", nativeQuery = true)
     List<String> findUniqueEntityIDByIDList (@Param("ids") Collection<Long> ids);
 
-    @Query(value = "select * from sam.sam_exclusions_data sed where (sed.sam_number in (:samNumber) and sed.sam_number <> '') or (sed.unique_entity_id in (:uniqueEntityID) and sed.unique_entity_id <> '') limit 500;", nativeQuery = true)
+    @Query(value = "select * from sam.sam_exclusions_data sed where (sed.sam_number in (:samNumber) and sed.sam_number <> '') or (sed.unique_entity_id in (:uniqueEntityID) and sed.unique_entity_id <> '') limit 2000;", nativeQuery = true)
     List<SAMExclusionsData> findBySamNumberListAndUniqueEntityIDList (@Param("samNumber") Collection<String> samNumber, @Param("uniqueEntityID") Collection<String> uniqueEntityID);
-    
+
+    @Query(value = "select * from sam.sam_exclusions_data sed where upper(sed.full_address) like upper( CONCAT('%', :address, '%')) limit 2000", nativeQuery = true)
+    List<SAMExclusionsData> findRecordsByAddress(@Param("address") String address);
 }
