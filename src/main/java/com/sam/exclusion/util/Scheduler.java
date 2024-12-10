@@ -26,7 +26,7 @@ public class Scheduler {
     @Scheduled(cron = "0 31 18 * * ?") // Run at 3:15 PM every day
     public void myTask() throws IOException {
         // Your task logic here
-        System.out.println("Task executed at 3:15 PM!");
+        System.out.println("Task executed at 06:31 PM!");
         downloadFile();
     }
 
