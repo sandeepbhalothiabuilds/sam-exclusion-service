@@ -19,7 +19,7 @@ public interface SAMExclusionsAliasRepository extends JpaRepository<SAMExclusion
     @Query(value = "delete FROM sam.sam_exclusions_alias WHERE sam_exclusion_data_id not in (select sam_exclusion_data_id from sam.sam_exclusions_data)", nativeQuery = true)
     void deleteAllRecords();
 
-    @Query(value = "select distinct sam_exclusion_data_id from sam.sam_exclusions_alias sea where upper(sea.alias_name) like upper( CONCAT('%', :name, '%')) limit 2000", nativeQuery =  true)
+    @Query(value = "select distinct sam_exclusion_data_id from sam.sam_exclusions_alias sea where upper(sea.alias_name) like upper( CONCAT('%', :name, '%')) or similarity(alias_name, :name) > .4 limit 2000", nativeQuery =  true)
     List<Long> findDistinctIDByAliasNameIgnoreCaseContaining (@Param("name") String name);
 
     @Query(value = "select distinct sam_exclusion_data_id from sam.sam_exclusions_alias sea where sea.alias_name in (select distinct sea1.alias_name from sam.sam_exclusions_alias sea1 where sea1.sam_exclusion_data_id in (select distinct sea2.sam_exclusion_data_id from sam.sam_exclusions_alias sea2 where upper(sea2.alias_name) like upper( CONCAT('%', :name, '%')))) except select distinct sea3.sam_exclusion_data_id from sam.sam_exclusions_alias sea3 where upper(sea3.alias_name) like upper( CONCAT('%', :name, '%')) limit 2000",

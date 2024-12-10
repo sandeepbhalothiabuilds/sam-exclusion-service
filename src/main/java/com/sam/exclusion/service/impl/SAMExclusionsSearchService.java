@@ -41,13 +41,13 @@ public class SAMExclusionsSearchService {
             List<Long> primaryIDs = aliasRepository.findDistinctIDByAliasNameIgnoreCaseContaining(samExclusionsSearchRequest.getName());
             List<String> samNumberList = dataRepository.findSamNumberByIDList(primaryIDs);
             List<String> uniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(primaryIDs);
-            List<SAMExclusionsData> primaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(samNumberList, uniqueEntityIDList);
+            List<SAMExclusionsData> primaryList = dataRepository.findBySamNumberListAndUniqueEntityIDListAndName(samNumberList, uniqueEntityIDList, samExclusionsSearchRequest.getName());
 
             //Getting Data for the secondary data
             List<Long> secondaryIDs = aliasRepository.findSecondaryDataByName(samExclusionsSearchRequest.getName());
             List<String> secondarySAMNumberList = dataRepository.findSamNumberByIDList(secondaryIDs);
             List<String> secondaryUniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(secondaryIDs);
-            List<SAMExclusionsData> secondaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(secondarySAMNumberList, secondaryUniqueEntityIDList);
+            List<SAMExclusionsData> secondaryList = dataRepository.findBySamNumberListAndUniqueEntityIDListAndName(secondarySAMNumberList, secondaryUniqueEntityIDList, samExclusionsSearchRequest.getName());
 
             ModelMapper modelMapper = new ModelMapper();
 
@@ -61,10 +61,10 @@ public class SAMExclusionsSearchService {
         }
         if (null != samExclusionsSearchRequest.getAddress() && !samExclusionsSearchRequest.getAddress().isEmpty()) {
             //Getting Data for the primary data
-            List<SAMExclusionsData> primarySAMExclusionsDataList = dataRepository.findRecordsByAddress(samExclusionsSearchRequest.getAddress().replaceAll(" ", "%"));
+            List<SAMExclusionsData> primarySAMExclusionsDataList = dataRepository.findRecordsByAddress(samExclusionsSearchRequest.getAddress().replaceAll(" ", "%"), samExclusionsSearchRequest.getAddress());
             List<String> samNumberList = dataRepository.findSamNumberByIDList(primarySAMExclusionsDataList.stream().map(SAMExclusionsData::getSamExclusionDataId).toList());
             List<String> uniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(primarySAMExclusionsDataList.stream().map(SAMExclusionsData::getSamExclusionDataId).toList());
-            List<SAMExclusionsData> primaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(samNumberList, uniqueEntityIDList);
+            List<SAMExclusionsData> primaryList = dataRepository.findBySamNumberListAndUniqueEntityIDListAndAddress(samNumberList, uniqueEntityIDList, samExclusionsSearchRequest.getAddress());
 
             List<SAMExclusionsData> mergedPrimaryList = mergeTwoListWithoutDuplicates(primarySAMExclusionsDataList, primaryList);
 
@@ -76,7 +76,7 @@ public class SAMExclusionsSearchService {
             List<Long> secondaryIDs = aliasRepository.findSecondaryDataIdsByProvidingAliasList(aliasList, samExclusionsSearchRequest.getAddress().replaceAll(" ", "%"));
             List<String> secondarySAMNumberList = dataRepository.findSamNumberByIDList(secondaryIDs);
             List<String> secondaryUniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(secondaryIDs);
-            List<SAMExclusionsData> mergedSecondaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(secondarySAMNumberList, secondaryUniqueEntityIDList);
+            List<SAMExclusionsData> mergedSecondaryList = dataRepository.findBySamNumberListAndUniqueEntityIDListAndAddress(secondarySAMNumberList, secondaryUniqueEntityIDList, samExclusionsSearchRequest.getAddress());
 
             ModelMapper modelMapper = new ModelMapper();
 
@@ -95,7 +95,15 @@ public class SAMExclusionsSearchService {
             secondaryDestinationAddressList.retainAll(secondaryDestinationNameList);
             searchResponse.setSecondaryData(secondaryDestinationAddressList);
         }
+
+        removeItemFromSecondListIfPresentInFirstList(searchResponse);
         return searchResponse;
+    }
+
+    private void removeItemFromSecondListIfPresentInFirstList(SAMExclusionsSearchResponse searchResponse) {
+        List<SAMExclusionsDataResponse> newSecondaryList = new ArrayList<SAMExclusionsDataResponse>(searchResponse.getSecondaryData());
+        newSecondaryList.removeAll(searchResponse.getPrimaryData());
+        searchResponse.setSecondaryData(newSecondaryList);
     }
 
     private void filterForClassificationAndAgency(List<SAMExclusionsDataResponse> primaryDestinationList, List<SAMExclusionsDataResponse> secondaryDestinationList, SAMExclusionsSearchResponse searchResponse, SAMExclusionsSearchRequest samExclusionsSearchRequest) {
