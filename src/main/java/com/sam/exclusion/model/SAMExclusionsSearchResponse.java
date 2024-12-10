@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class SAMExclusionsSearchResponse {
-    private int primaryIDListSize;
     private List<SAMExclusionsDataResponse> primaryData = new ArrayList<>();
     private List<SAMExclusionsDataResponse> secondaryData = new ArrayList<>();
 }

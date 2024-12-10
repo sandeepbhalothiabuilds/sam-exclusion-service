@@ -31,15 +31,25 @@ public class SAMExclusionsSearchService {
 
         SAMExclusionsSearchResponse searchResponse = new SAMExclusionsSearchResponse();
         
-        List<Long> primaryIDs = aliasRepository.findDistinctIDByAliasNameIgnoreCaseContaining(samExclusionsSearchRequest.getName());
-        searchResponse.setPrimaryIDListSize(primaryIDs.size());
-        List<SAMExclusionsData> primaryList = dataRepository.findExclusionDataByIDList(primaryIDs);
+        //Getting Data for the primary data
+        List<Long> primaryIDs = aliasRepository.findDistinctIDByAliasNameIgnoreCaseContaining(samExclusionsSearchRequest.getName()); 
+        List<String> samNumberList = dataRepository.findSamNumberByIDList(primaryIDs);
+        List<String> uniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(primaryIDs);
+        List<SAMExclusionsData> primaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(samNumberList,uniqueEntityIDList);
+       
+        //Getting Data for the secondary data
+        List<Long> secondaryIDs = aliasRepository.findSecondaryDataByName(samExclusionsSearchRequest.getName());
+        List<String> secondarySAMNumberList = dataRepository.findSamNumberByIDList(secondaryIDs);
+        List<String> secondaryUniqueEntityIDList = dataRepository.findUniqueEntityIDByIDList(secondaryIDs);
+        List<SAMExclusionsData> secondaryList = dataRepository.findBySamNumberListAndUniqueEntityIDList(secondarySAMNumberList,secondaryUniqueEntityIDList);
+
         ModelMapper modelMapper = new ModelMapper();
 
         List<SAMExclusionsDataResponse> destinationList = modelMapper.map(primaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {}.getType());
+        List<SAMExclusionsDataResponse> secondaryDestinationList = modelMapper.map(secondaryList, new TypeToken<List<SAMExclusionsDataResponse>>() {}.getType());
 
         searchResponse.setPrimaryData(destinationList);
-
+        searchResponse.setSecondaryData(secondaryDestinationList);
         return searchResponse;
     }
 
