@@ -3,11 +3,11 @@ phases:
   build:
     commands:
       - echo Packaging JAR file...
-      - mvn clean package
+      - mvn clean install
   post_build:
     commands:
       - echo Build complete.
 artifacts:
   files:
-    - target/SAMExclusions-app.jar
+    - target/SAMExclusions-app-jar-with-dependencies.jar
   discard-paths: yes
